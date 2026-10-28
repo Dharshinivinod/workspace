@@ -1,0 +1,149 @@
+{
+  "info": {
+    "_postman_id": "dc20e112-25bb-404f-8f6a-1a599c7c0e22",
+    "name": "E-Commerce API Testing Project.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54310273",
+    "_collection_link": "https://go.postman.co/collection/54310273-dc20e112-25bb-404f-8f6a-1a599c7c0e22?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "get 1product",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const repsonse=pm.response.json();\r\npm.test(\"Status code is 200\", function () {\r\n    pm.expect(pm.response.code).to.eql(200);\r\n});\r\n\r\npm.test(\"Product id is correct\", function () {  \r\n    pm.expect(repsonse.id).to.eql(1);\r\n\r\n});  \r\npm.test(\"Product title is correct\", function () {\r\n    pm.expect(repsonse.title).to.be.a(\"string\").and.not.empty;\r\n});\r\npm.test(\"Product price is correct\", function () {\r\n    pm.expect(repsonse.price).to.be.a(\"number\").and.to.be.greaterThan(0);\r\n});\r\npm.test(\"Product category is correct\", function () {\r\n    pm.expect(repsonse.category).to.be.a(\"string\").and.not.empty;\r\n});\r\n"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://dummyjson.com/products/1",
+          "protocol": "https",
+          "host": [
+            "dummyjson",
+            "com"
+          ],
+          "path": [
+            "products",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Non-Existing Product",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const response=pm.response.json();\r\npm.test(\"Status code is 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});\r\npm.test(\"Response body contains the correct message\", function () {\r\n    pm.expect(response.message).to.eql(\"Product with id '99999' not found\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://dummyjson.com/products/99999",
+          "protocol": "https",
+          "host": [
+            "dummyjson",
+            "com"
+          ],
+          "path": [
+            "products",
+            "99999"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Validate multiple products",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const response = pm.response.json();\n\npm.test(\"Response contains product array\", function (){\n    pm.expect(response.products).to.be.an('array');\n});\n\npm.test(\"Exactly 5 products are returned\", function(){\n    pm.expect(response.products.length).to.equal(5);\n});\n\npm.test(\"Every product has valid ID and title\", function (){\n    response.products.forEach(function (product) {\n        pm.expect(product.id).to.be.a('number');\n        pm.expect(product.title).to.be.a('string').and.not.to.be.empty;\n    });\n});\n\npm.test(\"Every product has valid price\", function () {\n    response.products.forEach(function(product){\n        pm.expect(product.price).to.be.a('number').and.to.be.greaterThan(0);\n    });\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://dummyjson.com/products?limit=5",
+          "protocol": "https",
+          "host": [
+            "dummyjson",
+            "com"
+          ],
+          "path": [
+            "products"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "5"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Data Driven Product Validation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const response = pm.response.json();\r\npm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\npm.test(\"Base products has valid details\", function (){\r\n    pm.expect(response.id).to.be.a(\"number\");\r\n    pm.expect(response.name).to.be.a(\"string\").and.not.empty;\r\n    pm.expect(response.price).to.be.above(0);\r\n});\r\nconst productsIds=[1,2,3];\r\nproductsIds.forEach(function(id){\r\n    pm.sendRequest(\r\n        pm.environment.get(\"BaseUrl\") + \"/products/\" + id,\r\n        function (err, res) {\r\n            pm.test(\"Product \" + id + \" returns 200\", function () {\r\n                pm.expect(err).to.eql(null);\r\n                pm.expect(res.code).to.eql(200);\r\n            });\r\n\r\n            if (!err && res.code === 200) {\r\n                const product = res.json();\r\n\r\n                pm.test(\"Product \" + id + \" has valid details\", function () {\r\n                    pm.expect(product.id).to.eql(id);\r\n                    pm.expect(product.title).to.be.a(\"string\").and.not.empty;\r\n                    pm.expect(product.price).to.be.a(\"number\");\r\n                    pm.expect(product.price).to.be.above(0);\r\n\r\n                     });\r\n            }\r\n        }\r\n    );\r\n});\r\n"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BaseUrl}}/products/1",
+          "host": [
+            "{{BaseUrl}}"
+          ],
+          "path": [
+            "products",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "negative data driven testing",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": ""
+        }
+      },
+      "response": []
+    }
+  ]
+}
